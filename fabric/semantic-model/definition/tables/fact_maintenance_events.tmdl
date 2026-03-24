@@ -1,0 +1,79 @@
+table fact_maintenance_events
+
+	/// Total maintenance events
+	measure '# Maintenance Events' = COUNTROWS(fact_maintenance_events)
+		formatString: #,##0
+
+	/// Total maintenance cost
+	measure 'Total Maintenance Cost' = SUM(fact_maintenance_events[Cost USD])
+		formatString: \$#,##0.00
+
+	/// Average labor hours
+	measure 'Avg Labor Hours' = AVERAGE(fact_maintenance_events[Labor Hours])
+		formatString: #,##0.0
+
+	column 'Maintenance ID'
+		dataType: string
+		isKey
+		summarizeBy: none
+		sourceColumn: maintenance_id
+
+	column VIN
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: vin
+
+	column 'Service Date'
+		dataType: dateTime
+		sourceColumn: service_date
+
+	column 'Maintenance Type'
+		dataType: string
+		sourceColumn: maintenance_type
+
+	column Category
+		dataType: string
+		sourceColumn: category
+
+	column 'Cost USD'
+		dataType: decimal
+		sourceColumn: cost_usd
+
+	column 'Dealer ID'
+		dataType: string
+		sourceColumn: dealer_id
+
+	column 'Technician ID'
+		dataType: string
+		sourceColumn: technician_id
+
+	column 'Parts Replaced'
+		dataType: int64
+		sourceColumn: parts_replaced
+
+	column 'Labor Hours'
+		dataType: decimal
+		sourceColumn: labor_hours
+
+	column 'Warranty Claim'
+		dataType: boolean
+		sourceColumn: warranty_claim
+
+	column 'Service Date Only'
+		dataType: dateTime
+		sourceColumn: service_date_only
+
+	column '_Cleaned At'
+		dataType: dateTime
+		isHidden
+		sourceColumn: _cleaned_at
+
+	partition fact_maintenance_events = m
+		mode: import
+		source =
+			let
+				Source = Sql.Database(#"Server", #"SilverDatabase"),
+				Data = Source{[Schema="dbo", Item="fact_maintenance"]}[Data]
+			in
+				Data

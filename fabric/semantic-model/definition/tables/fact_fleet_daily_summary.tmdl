@@ -1,0 +1,87 @@
+table fact_fleet_daily_summary
+
+	/// Total anomaly events across all daily fleet summaries
+	measure 'Total Anomaly Events' = SUM(fact_fleet_daily_summary[Total Anomalies])
+		formatString: #,##0
+
+	/// Average anomaly rate across daily fleet summaries
+	measure 'Avg Anomaly Rate %' = AVERAGE(fact_fleet_daily_summary[Anomaly Rate Pct])
+		formatString: 0.00%
+
+	/// Total active vehicles represented in the aggregate
+	measure 'Total Active Vehicles' = SUM(fact_fleet_daily_summary[Active Vehicles])
+		formatString: #,##0
+
+	column 'Reading Date'
+		dataType: dateTime
+		sourceColumn: reading_date
+
+	column 'Fleet ID'
+		dataType: string
+		sourceColumn: fleet_id
+
+	column Region
+		dataType: string
+		sourceColumn: region
+
+	column 'Active Vehicles'
+		dataType: int64
+		sourceColumn: active_vehicles
+
+	column 'Total Readings'
+		dataType: int64
+		isHidden
+		sourceColumn: total_readings
+
+	column 'Avg Engine Temp'
+		dataType: decimal
+		sourceColumn: avg_engine_temp
+
+	column 'Avg Oil Pressure'
+		dataType: decimal
+		sourceColumn: avg_oil_pressure
+
+	column 'Avg Battery Voltage'
+		dataType: decimal
+		sourceColumn: avg_battery_voltage
+
+	column 'Avg Speed'
+		dataType: decimal
+		sourceColumn: avg_speed
+
+	column 'Engine Anomaly Count'
+		dataType: int64
+		isHidden
+		sourceColumn: engine_anomaly_count
+
+	column 'Oil Anomaly Count'
+		dataType: int64
+		isHidden
+		sourceColumn: oil_anomaly_count
+
+	column 'Battery Anomaly Count'
+		dataType: int64
+		isHidden
+		sourceColumn: battery_anomaly_count
+
+	column 'Total Anomalies'
+		dataType: int64
+		sourceColumn: total_anomalies
+
+	column 'Anomaly Rate Pct'
+		dataType: decimal
+		sourceColumn: anomaly_rate_pct
+
+	column '_Aggregated At'
+		dataType: dateTime
+		isHidden
+		sourceColumn: _aggregated_at
+
+	partition fact_fleet_daily_summary = m
+		mode: import
+		source =
+			let
+				Source = Sql.Database(#"Server", #"GoldDatabase"),
+				Data = Source{[Schema="dbo", Item="agg_fleet_daily_summary"]}[Data]
+			in
+				Data

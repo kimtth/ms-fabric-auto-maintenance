@@ -1,0 +1,63 @@
+﻿{
+  "properties": {
+    "description": "End-to-end Medallion Architecture pipeline: Bronze (ingest) -> Silver (transform) -> Gold (aggregate)",
+    "activities": [
+      {
+        "name": "Bronze - Ingest Raw Data",
+        "type": "TridentNotebook",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebookId": "{{BRONZE_NOTEBOOK_ID}}",
+          "workspaceId": "{{WORKSPACE_ID}}"
+        }
+      },
+      {
+        "name": "Silver - Transform and Validate",
+        "type": "TridentNotebook",
+        "dependsOn": [
+          {
+            "activity": "Bronze - Ingest Raw Data",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebookId": "{{SILVER_NOTEBOOK_ID}}",
+          "workspaceId": "{{WORKSPACE_ID}}"
+        }
+      },
+      {
+        "name": "Gold - Business Aggregates",
+        "type": "TridentNotebook",
+        "dependsOn": [
+          {
+            "activity": "Silver - Transform and Validate",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30
+        },
+        "typeProperties": {
+          "notebookId": "{{GOLD_NOTEBOOK_ID}}",
+          "workspaceId": "{{WORKSPACE_ID}}"
+        }
+      }
+    ]
+  }
+}

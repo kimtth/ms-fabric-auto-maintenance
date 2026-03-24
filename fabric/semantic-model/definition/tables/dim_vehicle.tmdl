@@ -1,0 +1,51 @@
+table dim_vehicle
+
+	/// Total number of vehicles
+	measure '# Vehicles' = COUNTROWS(dim_vehicle)
+		formatString: #,##0
+
+	column VIN
+		dataType: string
+		isKey
+		summarizeBy: none
+		sourceColumn: vin
+
+	column Make
+		dataType: string
+		sourceColumn: make
+
+	column Model
+		dataType: string
+		sourceColumn: model
+
+	column Year
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: year
+
+	column Mileage
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: mileage
+
+	column Region
+		dataType: string
+		sourceColumn: region
+
+	column 'Fleet ID'
+		dataType: string
+		sourceColumn: fleet_id
+
+	column '_Cleaned At'
+		dataType: dateTime
+		isHidden
+		sourceColumn: _cleaned_at
+
+	partition dim_vehicle = m
+		mode: import
+		source =
+			let
+				Source = Sql.Database(#"Server", #"SilverDatabase"),
+				Data = Source{[Schema="dbo", Item="dim_vehicles"]}[Data]
+			in
+				Data

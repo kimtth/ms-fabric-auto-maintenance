@@ -1,0 +1,5 @@
+expression Server = "YOUR_SQL_ENDPOINT_SERVER" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+expression SilverDatabase = "automotive_silver" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+
+expression GoldDatabase = "automotive_gold" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]

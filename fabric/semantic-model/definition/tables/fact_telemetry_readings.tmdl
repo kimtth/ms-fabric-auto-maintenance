@@ -1,0 +1,114 @@
+table fact_telemetry_readings
+
+	/// Total telemetry rows
+	measure '# Telemetry Readings' = COUNTROWS(fact_telemetry_readings)
+		formatString: #,##0
+
+	/// Average engine temperature
+	measure 'Avg Engine Temp' = AVERAGE(fact_telemetry_readings[Engine Temp F])
+		formatString: #,##0.0
+
+	/// Percentage of telemetry rows flagged as anomalies
+	measure 'Telemetry Anomaly %' = ```
+			DIVIDE(
+				COUNTROWS(FILTER(fact_telemetry_readings, fact_telemetry_readings[Any Anomaly] = TRUE())),
+				COUNTROWS(fact_telemetry_readings)
+			)
+			```
+		formatString: 0.00%
+
+	column 'Reading ID'
+		dataType: string
+		isKey
+		summarizeBy: none
+		sourceColumn: reading_id
+
+	column VIN
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: vin
+
+	column Timestamp
+		dataType: dateTime
+		sourceColumn: timestamp
+
+	column 'Engine Temp F'
+		dataType: decimal
+		sourceColumn: engine_temp_f
+
+	column 'Oil Pressure PSI'
+		dataType: decimal
+		sourceColumn: oil_pressure_psi
+
+	column 'Battery Voltage V'
+		dataType: decimal
+		sourceColumn: battery_voltage_v
+
+	column RPM
+		dataType: int64
+		sourceColumn: rpm
+
+	column 'Speed MPH'
+		dataType: decimal
+		sourceColumn: speed_mph
+
+	column 'Fuel Level Pct'
+		dataType: decimal
+		sourceColumn: fuel_level_pct
+
+	column 'Engine Temp Valid'
+		dataType: boolean
+		isHidden
+		sourceColumn: engine_temp_valid
+
+	column 'Oil Pressure Valid'
+		dataType: boolean
+		isHidden
+		sourceColumn: oil_pressure_valid
+
+	column 'Battery Voltage Valid'
+		dataType: boolean
+		isHidden
+		sourceColumn: battery_voltage_valid
+
+	column 'RPM Valid'
+		dataType: boolean
+		isHidden
+		sourceColumn: rpm_valid
+
+	column 'Engine Temp Anomaly'
+		dataType: boolean
+		sourceColumn: engine_temp_anomaly
+
+	column 'Oil Pressure Anomaly'
+		dataType: boolean
+		sourceColumn: oil_pressure_anomaly
+
+	column 'Battery Anomaly'
+		dataType: boolean
+		sourceColumn: battery_anomaly
+
+	column 'Data Quality'
+		dataType: string
+		sourceColumn: _data_quality
+
+	column '_Cleaned At'
+		dataType: dateTime
+		isHidden
+		sourceColumn: _cleaned_at
+
+	column 'Any Anomaly'
+		dataType: boolean
+		isHidden
+		sourceColumn: Any Anomaly
+
+	partition fact_telemetry_readings = m
+		mode: import
+		source =
+			let
+				Source = Sql.Database(#"Server", #"SilverDatabase"),
+				Base = Source{[Schema="dbo", Item="fact_telemetry"]}[Data],
+				WithAnomaly = Table.AddColumn(Base, "Any Anomaly", each [engine_temp_anomaly] or [oil_pressure_anomaly] or [battery_anomaly], type logical)
+			in
+				WithAnomaly

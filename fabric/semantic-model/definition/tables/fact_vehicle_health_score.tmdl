@@ -1,0 +1,118 @@
+table fact_vehicle_health_score
+
+	/// Average composite health score across all vehicles
+	measure 'Avg Health Score' = AVERAGE(fact_vehicle_health_score[Health Score])
+		formatString: #,##0.0
+
+	/// Percentage of vehicles classified as High risk
+	measure 'High Risk %' = ```
+			DIVIDE(
+				COUNTROWS(FILTER(fact_vehicle_health_score, fact_vehicle_health_score[Risk Level] = "High")),
+				COUNTROWS(fact_vehicle_health_score)
+			)
+			```
+		formatString: 0.0%
+
+	/// Average total maintenance cost per vehicle
+	measure 'Avg Vehicle Maintenance Cost' = AVERAGE(fact_vehicle_health_score[Total Maintenance Cost])
+		formatString: \$#,##0.00
+
+	column VIN
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: vin
+
+	column Make
+		dataType: string
+		sourceColumn: make
+
+	column Model
+		dataType: string
+		sourceColumn: model
+
+	column Year
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: year
+
+	column Mileage
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: mileage
+
+	column Region
+		dataType: string
+		sourceColumn: region
+
+	column 'Fleet ID'
+		dataType: string
+		sourceColumn: fleet_id
+
+	column 'Total Readings'
+		dataType: int64
+		isHidden
+		sourceColumn: total_readings
+
+	column 'Anomaly Rate'
+		dataType: decimal
+		isHidden
+		sourceColumn: anomaly_rate
+
+	column 'Total DTCs'
+		dataType: int64
+		sourceColumn: total_dtcs
+
+	column 'Critical DTC Count'
+		dataType: int64
+		sourceColumn: critical_dtc_count
+
+	column 'Total Services'
+		dataType: int64
+		sourceColumn: total_services
+
+	column 'Last Service Date'
+		dataType: dateTime
+		sourceColumn: last_service_date
+
+	column 'Total Maintenance Cost'
+		dataType: decimal
+		sourceColumn: total_maintenance_cost
+
+	column 'Days Since Last Service'
+		dataType: int64
+		sourceColumn: days_since_last_service
+
+	column 'Sensor Score'
+		dataType: decimal
+		sourceColumn: sensor_score
+
+	column 'DTC Score'
+		dataType: decimal
+		sourceColumn: dtc_score
+
+	column 'Maintenance Score'
+		dataType: decimal
+		sourceColumn: maintenance_score
+
+	column 'Health Score'
+		dataType: decimal
+		sourceColumn: health_score
+
+	column 'Risk Level'
+		dataType: string
+		sourceColumn: risk_level
+
+	column '_Aggregated At'
+		dataType: dateTime
+		isHidden
+		sourceColumn: _aggregated_at
+
+	partition fact_vehicle_health_score = m
+		mode: import
+		source =
+			let
+				Source = Sql.Database(#"Server", #"GoldDatabase"),
+				Data = Source{[Schema="dbo", Item="agg_vehicle_health_score"]}[Data]
+			in
+				Data

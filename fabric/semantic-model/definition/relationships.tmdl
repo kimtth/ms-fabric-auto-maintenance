@@ -1,0 +1,15 @@
+relationship 'fact_telemetry_readings to dim_vehicle'
+	fromColumn: fact_telemetry_readings.VIN
+	toColumn: dim_vehicle.VIN
+
+relationship 'fact_dtc_events to dim_vehicle'
+	fromColumn: fact_dtc_events.VIN
+	toColumn: dim_vehicle.VIN
+
+relationship 'fact_maintenance_events to dim_vehicle'
+	fromColumn: fact_maintenance_events.VIN
+	toColumn: dim_vehicle.VIN
+
+relationship 'fact_vehicle_health_score to dim_vehicle'
+	fromColumn: fact_vehicle_health_score.VIN
+	toColumn: dim_vehicle.VIN

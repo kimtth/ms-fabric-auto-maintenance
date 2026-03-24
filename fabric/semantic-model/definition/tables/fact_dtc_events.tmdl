@@ -1,0 +1,67 @@
+table fact_dtc_events
+
+	/// Total DTC events
+	measure '# DTC Events' = COUNTROWS(fact_dtc_events)
+		formatString: #,##0
+
+	/// Number of active DTC events
+	measure '# Active DTC Events' = COUNTROWS(FILTER(fact_dtc_events, fact_dtc_events[Is Active] = TRUE()))
+		formatString: #,##0
+
+	/// Average severity rank
+	measure 'Avg Severity Rank' = AVERAGE(fact_dtc_events[Severity Rank])
+		formatString: #,##0.00
+
+	column 'DTC Event ID'
+		dataType: string
+		isKey
+		summarizeBy: none
+		sourceColumn: dtc_event_id
+
+	column VIN
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: vin
+
+	column Timestamp
+		dataType: dateTime
+		sourceColumn: timestamp
+
+	column 'DTC Code'
+		dataType: string
+		sourceColumn: dtc_code
+
+	column 'DTC Description'
+		dataType: string
+		sourceColumn: dtc_description
+
+	column 'System Category'
+		dataType: string
+		sourceColumn: system_category
+
+	column Severity
+		dataType: string
+		sourceColumn: severity
+
+	column 'Is Active'
+		dataType: boolean
+		sourceColumn: is_active
+
+	column 'Severity Rank'
+		dataType: int64
+		sourceColumn: severity_rank
+
+	column '_Cleaned At'
+		dataType: dateTime
+		isHidden
+		sourceColumn: _cleaned_at
+
+	partition fact_dtc_events = m
+		mode: import
+		source =
+			let
+				Source = Sql.Database(#"Server", #"SilverDatabase"),
+				Data = Source{[Schema="dbo", Item="fact_dtc_events"]}[Data]
+			in
+				Data

@@ -1,0 +1,76 @@
+table fact_dtc_frequency
+
+	/// Total DTC occurrences across all aggregate groups
+	measure 'Total DTC Occurrences' = SUM(fact_dtc_frequency[Occurrence Count])
+		formatString: #,##0
+
+	/// Total affected vehicles across all aggregate groups
+	measure 'Total Affected Vehicles' = SUM(fact_dtc_frequency[Affected Vehicles])
+		formatString: #,##0
+
+	/// Average active rate across all aggregate groups
+	measure 'Avg Active Rate %' = AVERAGE(fact_dtc_frequency[Active Rate Pct])
+		formatString: 0.0%
+
+	column 'DTC Code'
+		dataType: string
+		sourceColumn: dtc_code
+
+	column 'DTC Description'
+		dataType: string
+		sourceColumn: dtc_description
+
+	column 'System Category'
+		dataType: string
+		sourceColumn: system_category
+
+	column Severity
+		dataType: string
+		sourceColumn: severity
+
+	column 'Event Date'
+		dataType: dateTime
+		sourceColumn: event_date
+
+	column 'Fleet ID'
+		dataType: string
+		sourceColumn: fleet_id
+
+	column Region
+		dataType: string
+		sourceColumn: region
+
+	column Make
+		dataType: string
+		sourceColumn: make
+
+	column 'Occurrence Count'
+		dataType: int64
+		sourceColumn: occurrence_count
+
+	column 'Affected Vehicles'
+		dataType: int64
+		sourceColumn: affected_vehicles
+
+	column 'Active Count'
+		dataType: int64
+		isHidden
+		sourceColumn: active_count
+
+	column 'Active Rate Pct'
+		dataType: decimal
+		sourceColumn: active_rate_pct
+
+	column '_Aggregated At'
+		dataType: dateTime
+		isHidden
+		sourceColumn: _aggregated_at
+
+	partition fact_dtc_frequency = m
+		mode: import
+		source =
+			let
+				Source = Sql.Database(#"Server", #"GoldDatabase"),
+				Data = Source{[Schema="dbo", Item="agg_dtc_frequency"]}[Data]
+			in
+				Data

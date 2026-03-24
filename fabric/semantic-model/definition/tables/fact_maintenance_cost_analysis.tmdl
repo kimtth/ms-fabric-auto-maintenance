@@ -1,0 +1,104 @@
+table fact_maintenance_cost_analysis
+
+	/// Total maintenance cost across all aggregate groups
+	measure 'Total Maintenance Cost Amount' = SUM(fact_maintenance_cost_analysis[Total Cost])
+		formatString: \$#,##0.00
+
+	/// Average cost per service grouping
+	measure 'Avg Cost Per Service' = AVERAGE(fact_maintenance_cost_analysis[Avg Cost])
+		formatString: \$#,##0.00
+
+	/// Total number of services represented in the aggregate
+	measure 'Total Services' = SUM(fact_maintenance_cost_analysis[Service Count])
+		formatString: #,##0
+
+	/// Warranty claim rate based on total services
+	measure 'Warranty Claim %' = ```
+			DIVIDE(
+				SUM(fact_maintenance_cost_analysis[Warranty Claims]),
+				SUM(fact_maintenance_cost_analysis[Service Count])
+			)
+			```
+		formatString: 0.0%
+
+	/// Total warranty cost across all aggregate groups
+	measure 'Total Warranty Cost' = SUM(fact_maintenance_cost_analysis[Warranty Cost])
+		formatString: \$#,##0.00
+
+	column 'Fleet ID'
+		dataType: string
+		sourceColumn: fleet_id
+
+	column Region
+		dataType: string
+		sourceColumn: region
+
+	column Make
+		dataType: string
+		sourceColumn: make
+
+	column Model
+		dataType: string
+		sourceColumn: model
+
+	column 'Maintenance Type'
+		dataType: string
+		sourceColumn: maintenance_type
+
+	column Category
+		dataType: string
+		sourceColumn: category
+
+	column 'Service Count'
+		dataType: int64
+		sourceColumn: service_count
+
+	column 'Total Cost'
+		dataType: decimal
+		sourceColumn: total_cost
+
+	column 'Avg Cost'
+		dataType: decimal
+		isHidden
+		sourceColumn: avg_cost
+
+	column 'Total Labor Hours'
+		dataType: decimal
+		sourceColumn: total_labor_hours
+
+	column 'Avg Labor Hours'
+		dataType: decimal
+		isHidden
+		sourceColumn: avg_labor_hours
+
+	column 'Total Parts Replaced'
+		dataType: int64
+		sourceColumn: total_parts_replaced
+
+	column 'Warranty Claims'
+		dataType: int64
+		isHidden
+		sourceColumn: warranty_claims
+
+	column 'Warranty Cost'
+		dataType: decimal
+		sourceColumn: warranty_cost
+
+	column 'Warranty Rate Pct'
+		dataType: decimal
+		isHidden
+		sourceColumn: warranty_rate_pct
+
+	column '_Aggregated At'
+		dataType: dateTime
+		isHidden
+		sourceColumn: _aggregated_at
+
+	partition fact_maintenance_cost_analysis = m
+		mode: import
+		source =
+			let
+				Source = Sql.Database(#"Server", #"GoldDatabase"),
+				Data = Source{[Schema="dbo", Item="agg_maintenance_cost_analysis"]}[Data]
+			in
+				Data

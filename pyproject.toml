@@ -1,0 +1,10 @@
+[project]
+name = "ms-fabric-jump-start"
+version = "0.1.0"
+description = "End-to-end Predictive Vehicle Maintenance"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fabric-jumpstart>=0.1.4",
+    "microsoft-fabric-api>=0.1.0b7",
+]
