@@ -62,7 +62,7 @@ FABRIC WORKSPACE
 
 ## Part A — Scripted Deployment (API)
 
-Steps 1–4a, 4, and 7 are automated by `scripts/deploy.ps1`.
+Steps 1–4 and 7 are automated by `scripts/deploy.ps1`.
 
 ### Step 1 — Create Workspace
 
@@ -114,16 +114,6 @@ Notebooks in `notebooks/`:
 - **01_bronze_ingest.ipynb** — generates 100 vehicles, 5K telemetry, 3K DTCs, 2K maintenance records
 - **02_silver_transform.ipynb** — dedup, null handling, anomaly flags, quality scores
 - **03_gold_aggregate.ipynb** — composite health scores, fleet daily KPIs, cost analysis, DTC frequency
-
-### Step 7 — Create Data Pipeline
-
-Pipeline orchestrates notebooks: Bronze → Silver → Gold sequentially using `TridentNotebook` activities with `dependsOn` chains.
-
-```powershell
-az rest --method post --resource "https://api.fabric.microsoft.com" `
-  --url "https://api.fabric.microsoft.com/v1/workspaces/$WS_ID/items" `
-  --body "@$env:TEMP\pipeline.json"
-```
 
 ---
 
@@ -187,11 +177,21 @@ Run the notebooks sequentially. Each one depends on the output of the previous.
 3. Open `03_gold_aggregate` → click **"Run all"** → wait for completion (~2 min)
    - Verify: 4 tables under `automotive_gold` → Tables: `agg_vehicle_health_score`, `agg_fleet_daily_summary`, `agg_maintenance_cost_analysis`, `agg_dtc_frequency`
 
-> **Alternative**: Use the Medallion ETL Pipeline (created in Step 7) to run all three in sequence automatically.
+### Step 7 — Create Data Pipeline
+
+The deployment script creates this pipeline automatically. It orchestrates Bronze → Silver → Gold sequentially using `TridentNotebook` activities with `dependsOn` chains.
+
+```powershell
+az rest --method post --resource "https://api.fabric.microsoft.com" `
+  --url "https://api.fabric.microsoft.com/v1/workspaces/$WS_ID/items" `
+  --body "@$env:TEMP\pipeline.json"
+```
+
+If you prefer orchestration over manual notebook execution, use the Medallion ETL Pipeline to run the three notebooks in sequence before continuing to Step 8.
 
 ### Step 8 — Configure the Semantic Model (Import Mode)
 
-The semantic model definition lives in `fabric/semantic-model/` and is intended to be published as TMDL. After deployment, configure the Power BI service connections in the portal.
+The semantic model definition lives in `fabric/semantic-model/` and is intended to be published as TMDL. Before this step, make sure the Silver and Gold tables exist by completing Step 6 manually or by running the pipeline from Step 7. After deployment, configure the Power BI service connections in the portal.
 
 1. Navigate to the workspace in the Fabric portal.
 2. Open the semantic model **`Automotive Predictive Maintenance`**.
