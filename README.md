@@ -1,9 +1,13 @@
 
-# ms-fabric-jump-start
+# Fabric Predictive Vehicle Maintenance
 
 End-to-end Predictive Vehicle Maintenance sample on Microsoft Fabric — Medallion Architecture (Bronze → Silver → Gold), import-mode Semantic Model, and Power BI Report deployed from code.
 
 See [FABRIC.md](FABRIC.md) for the full deployment guide.
+
+<p align="center">
+	<img src="docs/fabric_diagram.png" alt="Fabric predictive vehicle maintenance architecture diagram" width="800" />
+</p>
 
 ---
 
